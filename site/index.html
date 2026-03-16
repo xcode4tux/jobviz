@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>US Job Market Visualizer</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="app">
+        <header>
+            <h1>US Job Market Visualizer</h1>
+            <p class="subtitle">
+                <span id="total-occupations">342</span> occupations •
+                <span id="total-employment">143M</span> jobs
+            </p>
+            <p class="source">
+                Data from <a href="https://www.bls.gov/ooh/" target="_blank">Bureau of Labor Statistics Occupational Outlook Handbook</a>
+            </p>
+        </header>
+
+        <nav id="layers" class="layer-controls">
+            <button class="layer-btn active" data-layer="outlook">
+                <span class="icon">📈</span>
+                BLS Outlook
+            </button>
+            <button class="layer-btn" data-layer="pay">
+                <span class="icon">💰</span>
+                Median Pay
+            </button>
+            <button class="layer-btn" data-layer="education">
+                <span class="icon">🎓</span>
+                Education
+            </button>
+            <button class="layer-btn" data-layer="ai-exposure">
+                <span class="icon">🤖</span>
+                Digital AI Exposure
+            </button>
+        </nav>
+
+        <main id="visualization">
+            <canvas id="treemap"></canvas>
+            <div id="tooltip" class="tooltip hidden"></div>
+        </main>
+
+        <aside id="stats" class="stats-panel">
+            <div class="stat-card">
+                <h3>TOTAL JOBS</h3>
+                <div class="stat-value" id="stat-total-jobs">143M</div>
+            </div>
+
+            <div class="stat-card">
+                <h3>AVG. OUTLOOK</h3>
+                <div class="stat-value" id="stat-avg-outlook">+3.4%</div>
+                <div class="stat-note">job-weighted</div>
+            </div>
+
+            <div class="stat-card">
+                <h3>JOBS BY OUTLOOK</h3>
+                <div class="histogram" id="outlook-histogram">
+                    <div class="hist-bar" data-tier="declining">
+                        <div class="bar-fill"></div>
+                        <span class="bar-label">&lt;0%</span>
+                    </div>
+                    <div class="hist-bar" data-tier="low">
+                        <div class="bar-fill"></div>
+                        <span class="bar-label">5%</span>
+                    </div>
+                    <div class="hist-bar" data-tier="medium">
+                        <div class="bar-fill"></div>
+                        <span class="bar-label">15%+</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <h3>OUTLOOK TIERS</h3>
+                <div class="tier-list" id="tier-list">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <h3>OUTLOOK BY PAY</h3>
+                <div class="pay-list" id="pay-list">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <h3>OUTLOOK BY EDUCATION</h3>
+                <div class="edu-list" id="edu-list">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <div class="stat-card stat-half">
+                <h3>DECLINING JOBS</h3>
+                <div class="stat-value negative" id="stat-declining">34.1M</div>
+                <div class="stat-note">negative outlook</div>
+            </div>
+
+            <div class="stat-card stat-half">
+                <h3>GROWING JOBS</h3>
+                <div class="stat-value positive" id="stat-growing">97.2M</div>
+                <div class="stat-note">positive outlook</div>
+            </div>
+
+            <div class="gradient-legend">
+                <span id="legend-low">Declining</span>
+                <div class="gradient-bar" id="gradient-bar"></div>
+                <span id="legend-high">Growing</span>
+            </div>
+        </aside>
+
+        <footer>
+            <a href="https://github.com/karpathy/jobs" target="_blank">GitHub</a> •
+            Built with Python + Playwright + Canvas
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

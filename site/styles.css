@@ -1,0 +1,431 @@
+/**
+ * US Job Market Visualizer
+ * Modern, responsive styles
+ */
+
+/* Reset & Base */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --bg-primary: #fafafa;
+    --bg-secondary: #ffffff;
+    --text-primary: #1a1a1a;
+    --text-secondary: #666666;
+    --border-color: #e0e0e0;
+    --accent-color: #3b82f6;
+    --positive-color: #22c55e;
+    --negative-color: #ef4444;
+    --shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg-primary: #1a1a1a;
+        --bg-secondary: #2a2a2a;
+        --text-primary: #f5f5f5;
+        --text-secondary: #a0a0a0;
+        --border-color: #3a3a3a;
+    }
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.5;
+}
+
+#app {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    grid-template-rows: auto auto 1fr auto;
+    gap: 1rem;
+    min-height: 100vh;
+    padding: 1rem;
+    max-width: 1800px;
+    margin: 0 auto;
+}
+
+/* Header */
+header {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 1.5rem 1rem;
+}
+
+header h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.subtitle {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+}
+
+.subtitle span {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.source {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-top: 0.5rem;
+}
+
+.source a {
+    color: var(--accent-color);
+    text-decoration: none;
+}
+
+.source a:hover {
+    text-decoration: underline;
+}
+
+/* Layer Controls */
+.layer-controls {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.layer-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.layer-btn:hover {
+    border-color: var(--accent-color);
+    background: var(--bg-primary);
+}
+
+.layer-btn.active {
+    background: var(--accent-color);
+    color: white;
+    border-color: var(--accent-color);
+}
+
+.layer-btn .icon {
+    font-size: 1.2rem;
+}
+
+/* Visualization */
+#visualization {
+    grid-column: 1 / 2;
+    position: relative;
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+}
+
+#treemap {
+    display: block;
+    width: 100%;
+    height: 100%;
+    cursor: crosshair;
+}
+
+/* Tooltip */
+.tooltip {
+    position: fixed;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1rem;
+    box-shadow: var(--shadow-lg);
+    pointer-events: none;
+    z-index: 1000;
+    max-width: 300px;
+    transition: opacity 0.15s ease;
+}
+
+.tooltip.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.tooltip-title {
+    font-weight: 600;
+    font-size: 1rem;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.tooltip-stat {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.tooltip-stat .label {
+    color: var(--text-secondary);
+}
+
+.tooltip-stat .value {
+    font-weight: 600;
+}
+
+.tooltip-rationale {
+    margin-top: 0.75rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--border-color);
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    line-height: 1.4;
+}
+
+/* Stats Panel */
+.stats-panel {
+    grid-column: 2 / 3;
+    grid-row: 3 / 5;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    overflow-y: auto;
+    max-height: calc(100vh - 200px);
+}
+
+.stat-card {
+    background: var(--bg-secondary);
+    border-radius: 10px;
+    padding: 1rem;
+    box-shadow: var(--shadow);
+}
+
+.stat-card h3 {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-secondary);
+    margin-bottom: 0.75rem;
+}
+
+.stat-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+}
+
+.stat-value.positive {
+    color: var(--positive-color);
+}
+
+.stat-value.negative {
+    color: var(--negative-color);
+}
+
+.stat-note {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-top: 0.25rem;
+}
+
+.stat-half {
+    flex: 1;
+}
+
+/* Histogram */
+.histogram {
+    display: flex;
+    gap: 4px;
+    height: 40px;
+}
+
+.hist-bar {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+}
+
+.hist-bar .bar-fill {
+    background: var(--accent-color);
+    border-radius: 4px 4px 0 0;
+    min-height: 4px;
+    transition: height 0.3s ease;
+}
+
+.hist-bar .bar-label {
+    font-size: 0.65rem;
+    color: var(--text-secondary);
+    text-align: center;
+    margin-top: 2px;
+}
+
+/* Tier List */
+.tier-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.tier-item {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 0.5rem;
+    align-items: center;
+    font-size: 0.85rem;
+}
+
+.tier-label {
+    color: var(--text-secondary);
+}
+
+.tier-value {
+    font-weight: 600;
+}
+
+.tier-percent {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+/* Pay/Edu Lists */
+.pay-list,
+.edu-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.pay-item,
+.edu-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85rem;
+}
+
+.pay-label,
+.edu-label {
+    color: var(--text-secondary);
+}
+
+.pay-outlook,
+.edu-outlook {
+    font-weight: 600;
+}
+
+.pay-outlook.positive,
+.edu-outlook.positive {
+    color: var(--positive-color);
+}
+
+.pay-outlook.negative,
+.edu-outlook.negative {
+    color: var(--negative-color);
+}
+
+/* Gradient Legend */
+.gradient-legend {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+}
+
+.gradient-legend span {
+    color: var(--text-secondary);
+    white-space: nowrap;
+}
+
+.gradient-bar {
+    flex: 1;
+    height: 12px;
+    border-radius: 6px;
+    display: flex;
+}
+
+.gradient-bar > div {
+    height: 100%;
+}
+
+/* Footer */
+footer {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 1rem;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+footer a {
+    color: var(--accent-color);
+    text-decoration: none;
+}
+
+footer a:hover {
+    text-decoration: underline;
+}
+
+/* Error message */
+.error {
+    color: var(--negative-color);
+    text-align: center;
+    padding: 2rem;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    #app {
+        grid-template-columns: 1fr;
+    }
+
+    .stats-panel {
+        grid-column: 1 / -1;
+        grid-row: auto;
+        max-height: none;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    }
+}
+
+@media (max-width: 640px) {
+    header h1 {
+        font-size: 1.5rem;
+    }
+
+    .subtitle {
+        font-size: 1rem;
+    }
+
+    .layer-controls {
+        flex-direction: column;
+    }
+
+    .layer-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .stats-panel {
+        grid-template-columns: 1fr;
+    }
+}
