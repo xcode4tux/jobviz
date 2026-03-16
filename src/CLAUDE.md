@@ -7,8 +7,6 @@
 
 | ID | Time | T | Title | Read |
 |----|------|---|-------|------|
-| #4971 | 1:40 PM | 🟣 | BLS Occupation Detail Page Scraper Implemented | ~377 |
-| #4966 | " | 🟣 | BLS Occupations Scraper Implemented | ~212 |
-| #4965 | " | 🔄 | Occupation Scraper Updated to Use Playwright for Bot Evasion | ~290 |
-| #4963 | " | 🟣 | Occupation List Scraper Implemented | ~354 |
+| #4986 | 2:15 PM | 🔴 | Fixed missing site/data.json breaking frontend data loading | ~291 |
+| #4976 | 1:54 PM | ✅ | JobViz project committed to git with complete implementation | ~305 |
 </claude-mem-context>

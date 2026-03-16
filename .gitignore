@@ -45,11 +45,16 @@ html/
 pages/
 *.csv
 *.json
+!data.json
 !src/*.json
 scores.json
 occupations.json
 occupations.csv
 prompt.md
+!app.js
+!index.html
+!styles.css
+!.nojekyll
 
 # OS
 .DS_Store

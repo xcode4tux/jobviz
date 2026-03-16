@@ -685,7 +685,9 @@ function setupCanvas() {
  */
 async function loadData() {
     try {
-        const response = await fetch('data.json');
+        // Handle both local and GitHub Pages paths
+        const basePath = window.location.pathname.replace(/\/$/, '');
+        const response = await fetch(basePath + '/data.json');
         data = await response.json();
 
         updateStats();

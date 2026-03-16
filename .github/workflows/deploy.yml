@@ -30,7 +30,24 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: './site'
+          path: '.'
+          exclude: |
+            '**/.git/**'
+            '**/.github/**'
+            '**/src/**'
+            '**/html/**'
+            '**/pages/**'
+            '**/.venv/**'
+            '**/*.py'
+            '**/*.csv'
+            '**/occupations.json'
+            '**/scores.json'
+            '**/PLAN.md'
+            '**/CLAUDE.md'
+            '**/.env.example'
+            '**/.gitignore'
+            '**/pyproject.toml'
+            '**/README.md'
 
       - name: Deploy to GitHub Pages
         id: deployment
