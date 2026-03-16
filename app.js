@@ -14,10 +14,11 @@ const COLOR_SCALES = {
         min: -15,
         max: 25,
         colors: [
-            { stop: 0, color: [200, 50, 50] },     // Red for declining
-            { stop: 0.4, color: [240, 180, 60] },  // Orange-yellow for flat
-            { stop: 0.7, color: [180, 200, 80] },  // Yellow-green
-            { stop: 1, color: [40, 160, 70] }      // Green for growing
+            // Muted red → amber → olive → teal for better readability
+            { stop: 0, color: [150, 60, 60] },     // Muted red for declining
+            { stop: 0.4, color: [190, 150, 80] },  // Softer amber for flat
+            { stop: 0.7, color: [150, 170, 95] },  // Muted yellow‑green
+            { stop: 1, color: [40, 120, 90] }      // Softer teal for growing
         ],
         format: v => `${v > 0 ? '+' : ''}${v}%`
     },
@@ -25,21 +26,23 @@ const COLOR_SCALES = {
         min: 25000,
         max: 180000,
         colors: [
-            { stop: 0, color: [255, 230, 150] },   // Light yellow
-            { stop: 0.33, color: [220, 180, 255] }, // Light purple
-            { stop: 0.66, color: [160, 120, 230] }, // Medium purple
-            { stop: 1, color: [100, 60, 180] }      // Deep purple
+            // Cooler, desaturated blues for easier contrast
+            { stop: 0, color: [210, 225, 245] },   // Very light blue
+            { stop: 0.33, color: [175, 200, 235] }, // Light blue
+            { stop: 0.66, color: [135, 170, 215] }, // Medium blue
+            { stop: 1, color: [90, 120, 185] }      // Darker blue
         ],
         format: v => `$${Math.round(v / 1000)}k`
     },
     education: {
         levels: [
-            { level: 0, color: [180, 180, 180], label: 'N/A' },
-            { level: 1, color: [140, 170, 200], label: 'No degree/HS' },
-            { level: 2, color: [140, 200, 180], label: 'Postsec/Assoc' },
-            { level: 3, color: [140, 200, 140], label: "Bachelor's" },
-            { level: 4, color: [180, 200, 140], label: "Master's" },
-            { level: 5, color: [200, 180, 140], label: 'Doctoral/Prof' }
+            // Neutral, slightly darker tones by level
+            { level: 0, color: [150, 150, 150], label: 'N/A' },
+            { level: 1, color: [130, 155, 185], label: 'No degree/HS' },
+            { level: 2, color: [125, 175, 160], label: 'Postsec/Assoc' },
+            { level: 3, color: [125, 175, 125], label: "Bachelor's" },
+            { level: 4, color: [165, 180, 125], label: "Master's" },
+            { level: 5, color: [185, 160, 120], label: 'Doctoral/Prof' }
         ],
         format: (v, edu) => edu || 'N/A'
     },
@@ -47,11 +50,12 @@ const COLOR_SCALES = {
         min: 0,
         max: 10,
         colors: [
-            { stop: 0, color: [240, 240, 240] },   // White/light gray
-            { stop: 0.25, color: [255, 210, 160] }, // Light orange
-            { stop: 0.5, color: [255, 140, 80] },   // Orange
-            { stop: 0.75, color: [230, 80, 60] },   // Red-orange
-            { stop: 1, color: [180, 40, 50] }      // Deep red
+            // Softer grayscale → plum ramp, less neon
+            { stop: 0, color: [235, 235, 235] },   // Light gray
+            { stop: 0.25, color: [210, 200, 220] }, // Pale lavender
+            { stop: 0.5, color: [185, 165, 210] },   // Soft violet
+            { stop: 0.75, color: [150, 115, 190] },   // Medium plum
+            { stop: 1, color: [115, 80, 165] }      // Deep plum
         ],
         format: v => `${v}/10`
     }
