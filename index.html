@@ -17,31 +17,18 @@
             <p class="source">
                 Data from <a href="https://www.bls.gov/ooh/" target="_blank">Bureau of Labor Statistics Occupational Outlook Handbook</a>
             </p>
+            <p class="description">
+                Each rectangle's <strong>area</strong> is proportional to total employment. <strong>Color</strong> shows the selected metric —
+                toggle between BLS projected growth outlook, median pay, education requirements, and estimated digital AI exposure.
+                Click any tile to open its full BLS page.
+            </p>
+            <p class="description">
+                This is a research and exploration tool inspired by
+                <a href="https://karpathy.ai/jobs/" target="_blank">US Job Market Visualizer</a>, not a formal economic forecast.
+                It uses scraped BLS data and optional LLM-generated scores to help you visually explore how different occupations
+                compare across the US economy.
+            </p>
         </header>
-
-        <nav id="layers" class="layer-controls">
-            <button class="layer-btn active" data-layer="outlook">
-                <span class="icon">📈</span>
-                BLS Outlook
-            </button>
-            <button class="layer-btn" data-layer="pay">
-                <span class="icon">💰</span>
-                Median Pay
-            </button>
-            <button class="layer-btn" data-layer="education">
-                <span class="icon">🎓</span>
-                Education
-            </button>
-            <button class="layer-btn" data-layer="ai-exposure">
-                <span class="icon">🤖</span>
-                Digital AI Exposure
-            </button>
-        </nav>
-
-        <main id="visualization">
-            <canvas id="treemap"></canvas>
-            <div id="tooltip" class="tooltip hidden"></div>
-        </main>
 
         <aside id="stats" class="stats-panel">
             <div class="stat-card">
@@ -64,54 +51,126 @@
                     </div>
                     <div class="hist-bar" data-tier="low">
                         <div class="bar-fill"></div>
-                        <span class="bar-label">5%</span>
+                        <span class="bar-label">0–7%</span>
                     </div>
                     <div class="hist-bar" data-tier="medium">
                         <div class="bar-fill"></div>
-                        <span class="bar-label">15%+</span>
+                        <span class="bar-label">8%+</span>
                     </div>
                 </div>
             </div>
 
-            <div class="stat-card">
+            <div class="stat-card small">
                 <h3>OUTLOOK TIERS</h3>
-                <div class="tier-list" id="tier-list">
-                    <!-- Populated by JS -->
-                </div>
+                <div class="tier-list" id="tier-list"></div>
             </div>
 
-            <div class="stat-card">
+            <div class="stat-card small">
                 <h3>OUTLOOK BY PAY</h3>
-                <div class="pay-list" id="pay-list">
-                    <!-- Populated by JS -->
-                </div>
+                <div class="pay-list" id="pay-list"></div>
             </div>
 
-            <div class="stat-card">
+            <div class="stat-card small">
                 <h3>OUTLOOK BY EDUCATION</h3>
-                <div class="edu-list" id="edu-list">
-                    <!-- Populated by JS -->
-                </div>
+                <div class="edu-list" id="edu-list"></div>
             </div>
 
-            <div class="stat-card stat-half">
+            <div class="stat-card compact">
                 <h3>DECLINING JOBS</h3>
                 <div class="stat-value negative" id="stat-declining">34.1M</div>
                 <div class="stat-note">negative outlook</div>
             </div>
 
-            <div class="stat-card stat-half">
+            <div class="stat-card compact">
                 <h3>GROWING JOBS</h3>
                 <div class="stat-value positive" id="stat-growing">97.2M</div>
                 <div class="stat-note">positive outlook</div>
             </div>
 
-            <div class="gradient-legend">
-                <span id="legend-low">Declining</span>
-                <div class="gradient-bar" id="gradient-bar"></div>
-                <span id="legend-high">Growing</span>
+            <div class="stat-card gradient-card">
+                <div class="gradient-legend">
+                    <span id="legend-low">Declining</span>
+                    <div class="gradient-bar" id="gradient-bar"></div>
+                    <span id="legend-high">Growing</span>
+                </div>
             </div>
         </aside>
+
+        <nav id="layers" class="layer-controls">
+            <button class="layer-btn active" data-layer="outlook">
+                <span class="icon">📈</span>
+                BLS Outlook
+            </button>
+            <button class="layer-btn" data-layer="pay">
+                <span class="icon">💰</span>
+                Median Pay
+            </button>
+            <button class="layer-btn" data-layer="education">
+                <span class="icon">🎓</span>
+                Education
+            </button>
+            <button class="layer-btn" data-layer="ai-exposure">
+                <span class="icon">🤖</span>
+                Digital AI Exposure
+            </button>
+        </nav>
+
+        <section aria-label="Digital AI Exposure explanation" class="ai-explainer">
+            <details>
+                <summary>How the Digital AI Exposure scores work</summary>
+                <div class="ai-explainer-body">
+                    <p>
+                        The <strong>Digital AI Exposure</strong> layer is powered by an LLM prompt that reads each occupation’s
+                        BLS description and assigns an exposure score from 0–10: how much current and near‑term AI is likely
+                        to reshape that occupation.
+                    </p>
+                    <p>
+                        The core idea: if a job’s work product is fundamentally <strong>digital</strong> and can be done from
+                        a computer (writing, coding, analyzing, communicating), its exposure is inherently higher than work
+                        that is primarily <strong>physical, manual, or in‑person</strong>.
+                    </p>
+                    <p><strong>Prompt (adapted from the original visualizer):</strong></p>
+                    <p>
+                        “You are an expert analyst evaluating how exposed different occupations are to AI. You will be given
+                        a detailed description of an occupation from the Bureau of Labor Statistics. Rate the occupation's
+                        overall AI Exposure on a scale from 0 to 10. AI Exposure measures: how much will AI reshape this
+                        occupation? Consider both direct effects (AI automating tasks currently done by humans) and indirect
+                        effects (AI making each worker so productive that fewer are needed).
+                    </p>
+                    <p>
+                        A key signal is whether the job's work product is fundamentally digital. If the job can be done
+                        entirely from a home office on a computer — writing, coding, analyzing, communicating — then AI
+                        exposure is inherently high (7+), because AI capabilities in digital domains are advancing rapidly.
+                        Conversely, jobs requiring physical presence, manual skill, or real-time human interaction in the
+                        physical world have a natural barrier to AI exposure.
+                    </p>
+                    <p>
+                        Use these anchors to calibrate your score:
+                        0–1: minimal exposure (mostly physical, unpredictable environments);
+                        2–3: low exposure (physical or interpersonal, AI only helps with side tasks);
+                        4–5: moderate (mix of physical/interpersonal and knowledge work);
+                        6–7: high (predominantly knowledge work with some human judgment or presence);
+                        8–9: very high (almost entirely digital knowledge work);
+                        10: maximum exposure (routine, fully digital information processing).”
+                    </p>
+                    <p>
+                        The model responds with a JSON object containing an <code>exposure</code> score and a short
+                        rationale, which this visualizer uses to color the occupations in the AI Exposure layer.
+                    </p>
+                    <p>
+                        <strong>Caveat:</strong> these scores are rough LLM estimates, not rigorous predictions.
+                        A high exposure score does <em>not</em> mean a job will disappear. Many high‑exposure jobs are
+                        likely to be reshaped, not replaced, and the scores ignore demand elasticity, regulation, and
+                        social preferences for human workers.
+                    </p>
+                </div>
+            </details>
+        </section>
+
+        <main id="visualization">
+            <canvas id="treemap"></canvas>
+            <div id="tooltip" class="tooltip hidden"></div>
+        </main>
 
         <footer>
             <a href="https://github.com/karpathy/jobs" target="_blank">GitHub</a> •
@@ -119,6 +178,6 @@
         </footer>
     </div>
 
-    <script src="app.js"></script>
+    <script src="app.js?v=2"></script>
 </body>
 </html>

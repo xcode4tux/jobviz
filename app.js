@@ -14,11 +14,11 @@ const COLOR_SCALES = {
         min: -15,
         max: 25,
         colors: [
-            // Muted red → amber → olive → teal for better readability
-            { stop: 0, color: [150, 60, 60] },     // Muted red for declining
-            { stop: 0.4, color: [190, 150, 80] },  // Softer amber for flat
-            { stop: 0.7, color: [150, 170, 95] },  // Muted yellow‑green
-            { stop: 1, color: [40, 120, 90] }      // Softer teal for growing
+            { stop: 0, color: [200, 40, 40] },      // Bright Red
+            { stop: 0.35, color: [170, 80, 40] },   // Orange/Brown
+            { stop: 0.5, color: [140, 120, 50] },   // Yellow/Olive
+            { stop: 0.7, color: [70, 140, 50] },    // Light Green
+            { stop: 1, color: [30, 180, 40] }       // Bright Green
         ],
         format: v => `${v > 0 ? '+' : ''}${v}%`
     },
@@ -26,23 +26,21 @@ const COLOR_SCALES = {
         min: 25000,
         max: 180000,
         colors: [
-            // Cooler, desaturated blues for easier contrast
-            { stop: 0, color: [210, 225, 245] },   // Very light blue
-            { stop: 0.33, color: [175, 200, 235] }, // Light blue
-            { stop: 0.66, color: [135, 170, 215] }, // Medium blue
-            { stop: 1, color: [90, 120, 185] }      // Darker blue
+            { stop: 0, color: [20, 40, 60] },       // Very dark blue
+            { stop: 0.33, color: [30, 80, 120] },   // Dark blue
+            { stop: 0.66, color: [40, 120, 180] },  // Medium blue
+            { stop: 1, color: [50, 160, 240] }      // Vibrant blue
         ],
         format: v => `$${Math.round(v / 1000)}k`
     },
     education: {
         levels: [
-            // Neutral, slightly darker tones by level
-            { level: 0, color: [150, 150, 150], label: 'N/A' },
-            { level: 1, color: [130, 155, 185], label: 'No degree/HS' },
-            { level: 2, color: [125, 175, 160], label: 'Postsec/Assoc' },
-            { level: 3, color: [125, 175, 125], label: "Bachelor's" },
-            { level: 4, color: [165, 180, 125], label: "Master's" },
-            { level: 5, color: [185, 160, 120], label: 'Doctoral/Prof' }
+            { level: 0, color: [60, 60, 60], label: 'N/A' },
+            { level: 1, color: [70, 90, 110], label: 'No degree/HS' },
+            { level: 2, color: [90, 110, 90], label: 'Postsec/Assoc' },
+            { level: 3, color: [80, 120, 80], label: "Bachelor's" },
+            { level: 4, color: [120, 130, 70], label: "Master's" },
+            { level: 5, color: [140, 100, 60], label: 'Doctoral/Prof' }
         ],
         format: (v, edu) => edu || 'N/A'
     },
@@ -50,12 +48,11 @@ const COLOR_SCALES = {
         min: 0,
         max: 10,
         colors: [
-            // Softer grayscale → plum ramp, less neon
-            { stop: 0, color: [235, 235, 235] },   // Light gray
-            { stop: 0.25, color: [210, 200, 220] }, // Pale lavender
-            { stop: 0.5, color: [185, 165, 210] },   // Soft violet
-            { stop: 0.75, color: [150, 115, 190] },   // Medium plum
-            { stop: 1, color: [115, 80, 165] }      // Deep plum
+            { stop: 0, color: [40, 40, 40] },
+            { stop: 0.25, color: [70, 40, 90] },
+            { stop: 0.5, color: [110, 50, 140] },
+            { stop: 0.75, color: [160, 60, 190] },
+            { stop: 1, color: [220, 70, 240] }
         ],
         format: v => `${v}/10`
     }
@@ -121,110 +118,96 @@ function formatValue(value, layer, eduString) {
 }
 
 /**
- * Squarified treemap layout algorithm
+ * Squarified treemap layout algorithm.
+ * Uses employment as area, normalized to the available rectangle.
  */
 function squarify(children, x, y, width, height, result) {
-    if (children.length === 0) return;
+    if (!children.length || width <= 0 || height <= 0) return;
 
-    if (children.length === 1) {
-        result.push({
-            ...children[0],
-            x, y, width, height
-        });
-        return;
+    // Normalize employment to pixel areas
+    const totalEmployment = children.reduce((sum, c) => sum + Math.max(0, c.employment || 0), 0);
+    if (!totalEmployment) return;
+
+    const totalArea = width * height;
+    const nodes = children
+        .map(c => ({
+            ...c,
+            area: (Math.max(0, c.employment || 0) / totalEmployment) * totalArea
+        }))
+        .sort((a, b) => b.area - a.area); // largest first
+
+    const rect = { x, y, width, height };
+    let row = [];
+
+    function worstAspect(rowNodes, w) {
+        if (!rowNodes.length) return Infinity;
+        const areas = rowNodes.map(n => n.area);
+        const sum = areas.reduce((a, v) => a + v, 0);
+        const sumSq = sum * sum;
+        const minA = Math.min(...areas);
+        const maxA = Math.max(...areas);
+        return Math.max((w * w * maxA) / sumSq, sumSq / (w * w * minA));
     }
 
-    // Sort by size (descending)
-    const sorted = [...children].sort((a, b) => b.employment - a.employment);
+    function layoutRow(rowNodes, rectObj, horizontal) {
+        const rowArea = rowNodes.reduce((a, n) => a + n.area, 0);
+        if (rowArea <= 0) return;
 
-    // Calculate total area
-    const total = sorted.reduce((sum, c) => sum + c.employment, 0);
-
-    // Find the worst aspect ratio for splitting
-    let bestRatio = Infinity;
-    let bestSplit = 1;
-    let rowSum = sorted[0].employment;
-    let min = sorted[0].employment;
-    let max = sorted[0].employment;
-
-    for (let i = 1; i < sorted.length; i++) {
-        rowSum += sorted[i].employment;
-        min = Math.min(min, sorted[i].employment);
-        max = Math.max(max, sorted[i].employment);
-
-        const area = rowSum / total;
-        const shortSide = Math.min(width, height);
-        const ratio = Math.max(
-            (shortSide * shortSide * max) / (area * area * area),
-            (area * area * area) / (shortSide * shortSide * min)
-        );
-
-        if (ratio > bestRatio) {
-            bestSplit = i;
-            break;
+        if (horizontal) {
+            const rowHeight = rowArea / rectObj.width;
+            let cx = rectObj.x;
+            for (const n of rowNodes) {
+                const w = n.area / rowHeight;
+                result.push({
+                    ...n,
+                    x: cx,
+                    y: rectObj.y,
+                    width: w,
+                    height: rowHeight
+                });
+                cx += w;
+            }
+            rectObj.y += rowHeight;
+            rectObj.height -= rowHeight;
+        } else {
+            const rowWidth = rowArea / rectObj.height;
+            let cy = rectObj.y;
+            for (const n of rowNodes) {
+                const h = n.area / rowWidth;
+                result.push({
+                    ...n,
+                    x: rectObj.x,
+                    y: cy,
+                    width: rowWidth,
+                    height: h
+                });
+                cy += h;
+            }
+            rectObj.x += rowWidth;
+            rectObj.width -= rowWidth;
         }
-        bestRatio = ratio;
     }
 
-    // Layout the row
-    const rowChildren = sorted.slice(0, bestSplit);
-    const remaining = sorted.slice(bestSplit);
+    let remaining = nodes.slice();
+    let horizontal = width >= height;
 
-    const rowTotal = rowChildren.reduce((sum, c) => sum + c.employment, 0);
-    const rowArea = (rowTotal / total) * (width * height);
+    while (remaining.length) {
+        const node = remaining[0];
+        const testRow = row.concat(node);
+        const side = horizontal ? rect.width : rect.height;
 
-    let rowX, rowY, rowW, rowH;
-
-    if (width >= height) {
-        // Horizontal layout
-        rowW = rowArea / height;
-        rowH = height;
-        rowX = x;
-        rowY = y;
-
-        // Layout row items vertically
-        let currentY = rowY;
-        const scale = rowH / rowTotal;
-
-        for (const child of rowChildren) {
-            const itemH = child.employment * scale;
-            result.push({
-                ...child,
-                x: rowX,
-                y: currentY,
-                width: rowW,
-                height: itemH
-            });
-            currentY += itemH;
+        if (row.length && worstAspect(testRow, side) > worstAspect(row, side)) {
+            layoutRow(row, rect, horizontal);
+            horizontal = rect.width >= rect.height;
+            row = [];
+        } else {
+            row = testRow;
+            remaining.shift();
         }
+    }
 
-        // Recurse on remaining
-        squarify(remaining, x + rowW, y, width - rowW, height, result);
-    } else {
-        // Vertical layout
-        rowW = width;
-        rowH = rowArea / width;
-        rowX = x;
-        rowY = y;
-
-        // Layout row items horizontally
-        let currentX = rowX;
-        const scale = rowW / rowTotal;
-
-        for (const child of rowChildren) {
-            const itemW = child.employment * scale;
-            result.push({
-                ...child,
-                x: currentX,
-                y: rowY,
-                width: itemW,
-                height: rowH
-            });
-            currentX += itemW;
-        }
-
-        // Recurse on remaining
-        squarify(remaining, x, y + rowH, width, height - rowH, result);
+    if (row.length) {
+        layoutRow(row, rect, horizontal);
     }
 }
 
@@ -235,16 +218,48 @@ function buildTreemap(occupations) {
     const layout = [];
     const canvas = document.getElementById('treemap');
     const rect = canvas.getBoundingClientRect();
-    const padding = 4;
+    const padding = 1;
 
+    // Group by category
+    const categories = {};
+    for (const occ of occupations) {
+        if (!categories[occ.category]) {
+            categories[occ.category] = {
+                title: occ.category,
+                employment: 0,
+                children: []
+            };
+        }
+        categories[occ.category].employment += Math.max(0, occ.employment || 0);
+        categories[occ.category].children.push(occ);
+    }
+
+    const categoryNodes = Object.values(categories).sort((a, b) => b.employment - a.employment);
+    const categoryLayout = [];
+
+    // 1. Layout the categories
     squarify(
-        occupations,
+        categoryNodes,
         padding,
         padding,
-        rect.width - padding * 2,
-        rect.height - padding * 2,
-        layout
+        rect.width - padding,
+        rect.height - padding,
+        categoryLayout
     );
+
+    // 2. Layout the children within each category
+    for (const cat of categoryLayout) {
+        // We use a small internal padding to distinguish category boundaries (2px gap between categories)
+        const innerPadding = 2;
+        squarify(
+            cat.children,
+            cat.x + innerPadding,
+            cat.y + innerPadding,
+            cat.width - innerPadding * 2,
+            cat.height - innerPadding * 2,
+            layout
+        );
+    }
 
     return layout;
 }
@@ -276,12 +291,24 @@ function drawTreemap() {
         ctx.fillStyle = `rgb(${color[0]}, ${color[1]}, ${color[2]})`;
         ctx.fillRect(tile.x, tile.y, tile.width - 1, tile.height - 1);
 
-        // Draw title if space allows
-        if (tile.width > 60 && tile.height > 20) {
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+        // Draw labels if space allows
+        if (tile.width > 80 && tile.height > 26) {
+            // Choose text color based on tile brightness
+            const luminance = (0.2126 * color[0] + 0.7152 * color[1] + 0.0722 * color[2]) / 255;
+            const textColor = luminance > 0.6 ? 'rgba(0, 0, 0, 0.8)' : 'rgba(255, 255, 255, 0.9)';
+
+            ctx.fillStyle = textColor;
             ctx.font = '11px system-ui, sans-serif';
-            const title = truncateText(tile.title, tile.width - 8);
-            ctx.fillText(title, tile.x + 4, tile.y + 14);
+            const maxTextWidth = tile.width - 8;
+
+            const title = truncateText(tile.title, maxTextWidth);
+            ctx.fillText(title, tile.x + 4, tile.y + 13);
+
+            // Second line: employment + outlook (reference-style)
+            const secondary = `${formatNumber(tile.employment)} • ${formatValue(tile.outlook, 'outlook')}`;
+            const secondaryText = truncateText(secondary, maxTextWidth);
+            ctx.font = '10px system-ui, sans-serif';
+            ctx.fillText(secondaryText, tile.x + 4, tile.y + 24);
         }
 
         // Store tile data for hit testing
@@ -680,8 +707,11 @@ function setupCanvas() {
     const canvas = document.getElementById('treemap');
     const container = document.getElementById('visualization');
 
-    canvas.width = container.clientWidth;
-    canvas.height = Math.max(600, window.innerHeight - 300);
+    const width = container.clientWidth;
+    const height = Math.round(width * 0.62); // similar aspect ratio to reference
+
+    canvas.width = width;
+    canvas.height = height;
 }
 
 /**
@@ -689,9 +719,8 @@ function setupCanvas() {
  */
 async function loadData() {
     try {
-        // Handle both local and GitHub Pages paths
-        const basePath = window.location.pathname.replace(/\/$/, '');
-        const response = await fetch(basePath + '/data.json');
+        // Fetch data.json relative to the current page (works for /, /index.html, and /jobviz/index.html)
+        const response = await fetch('data.json');
         data = await response.json();
 
         updateStats();
